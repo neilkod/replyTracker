@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import ConfigParser,tweepy
+import ConfigParser,tweepy,re
 
 
 
@@ -22,12 +22,22 @@ def getConfiguration():
 		
 def main():
 
+	terms = ['@thebotlebowski','@acenterforants','@abakingpowder','@which_is_nice','@iamjacksbot']
 	(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_KEY,ACCESS_SECRET) = getConfiguration()
 	
 	auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 	auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 	api = tweepy.API(auth)
+	rateStatus = api.rate_limit_status()
+	results = api.search(q='@thebotlebowski',rpp=100)
+	print len(results)
+	for result in results:
+		for term in terms:
+			searchterm = '%s remove' % term
+			regexp = re.compile(searchterm)
+			if re.search(regexp,result.text.lower()) % (term):
+				print "%s\t%s" % (result.from_user,result.text)
 
-	
+
 if __name__ == '__main__':
 	main()
