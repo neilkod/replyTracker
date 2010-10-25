@@ -35,7 +35,7 @@ def main():
 		for term in terms:
 			searchterm = '%s remove' % term
 			regexp = re.compile(searchterm)
-			if re.search(regexp,result.text.lower()) % (term):
+			if regexp.search(result.text.lower()):
 				print "%s\t%s" % (result.from_user,result.text)
 
 
