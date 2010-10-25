@@ -1,9 +1,12 @@
 #!/usr/bin/python
-import ConfigParser
+import ConfigParser,tweepy
+
 
 
 # get the configuration
 def getConfiguration():
+	""" Look up a few values out of a config file in order to authenticate
+		as @thebotlebowski.  Eventually I'll support all of the bots"""
 
 	config = ConfigParser.ConfigParser()
 	config.readfp(open('configuration.cfg'))
@@ -13,13 +16,17 @@ def getConfiguration():
 
 	accessKey = config.get('TheBotLebowski','ACCESS_KEY')
 	accessSecret = config.get('TheBotLebowski','ACCESS_SECRET')
+
+	return (consumerKey,consumerSecret,accessKey,accessSecret)
 	
-	return {'consumerKey':consumerKey, 'consumerSecret':consumerSecret,'accessKey':accessKey, \
-		'accessSecret':accessSecret}
 		
 def main():
-	conf = getConfiguration()
-	print conf
+
+	(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_KEY,ACCESS_SECRET) = getConfiguration()
+	
+	auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+	auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+	api = tweepy.API(auth)
 
 	
 if __name__ == '__main__':
