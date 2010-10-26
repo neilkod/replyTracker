@@ -39,24 +39,53 @@ def testit():
 	configFile = 'configuration.cfg'
 	last = getLast(configFile)
 	setLast(configFile,last + 1)
+
+def loadExcludeList(excludeFile):
+	users = []
+	for line in open(excludeFile):
+		users.append(line.strip())
+	return set(users)
+
+def writeExcludeList(excludeFile,theUser):
+	
+	theFile = open(excludeFile,'a')
+	theText = "%s\n" % theUser
+	theFile.write(theText)
+	theFile.close()	
+	
 		
 def main():
 	configFile = 'configuration.cfg'
+	excludeFile = 'exclude.txt'
+	
+	# 
+	excludeUsers = loadExcludeList(excludeFile)
+	
 	terms = ['@thebotlebowski','@acenterforants','@abakingpowder','@which_is_nice','@iamjacksbot']
 	(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_KEY,ACCESS_SECRET,last) = getConfiguration(configFile)
+	
+	# log in to twitter
 	
 	auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 	auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 	api = tweepy.API(auth)
 	rateStatus = api.rate_limit_status()
 	results = api.search(q='@thebotlebowski',rpp=100,since_id=last)
-	for result in results:
+	for result in reversed(results):
 		for term in terms:
 			searchterm = '%s remove' % term
 			regexp = re.compile(searchterm)
 			if regexp.search(result.text.lower()):
-				print "%s\t%s\t%s" % (result.from_user,result.text,result.id)
+				print "%s\t%s\t%s" % (result.id,result.from_user,result.text)
 				setLast(configFile,result.id)
+				
+				# if the user to exclude is not in the list
+				# then add the user to the exclude list
+				
+				if result.from_user not in excludeUsers:
+					excludeUsers.add(result.from_user)
+					print "found a new user to ignore %s" % result.from_user
+					writeExcludeList(excludeFile, result.from_user)
 
 if __name__ == '__main__':
 	main()
